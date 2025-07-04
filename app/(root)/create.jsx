@@ -1,7 +1,6 @@
-import { ActivityIndicator, TextInput } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { View, Text, Alert, TouchableOpacity } from "react-native";
+import { View, Text, Alert, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
 import { useUser } from "@clerk/clerk-expo";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
