@@ -1,4 +1,3 @@
-import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import { Text, TextInput, TouchableOpacity, View, Image } from "react-native";
 import { useState } from "react";
@@ -6,44 +5,37 @@ import { styles } from "@/assets/styles/auth.styles.js";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { COLORS } from "@/constants/colors.js";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Page() {
-    const { signIn, setActive, isLoaded } = useSignIn();
+    const { signIn } = useAuth();
     const router = useRouter();
 
     const [emailAddress, setEmailAddress] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     // Handle the submission of the sign-in form
     const onSignInPress = async () => {
-        if (!isLoaded) return;
+        if (loading) return;
 
-        // Start the sign-in process using the email and password provided
+        setLoading(true);
+        setError("");
+console.log(emailAddress, password)
         try {
-            const signInAttempt = await signIn.create({
-                identifier: emailAddress,
-                password,
-            });
-
-            // If sign-in process is complete, set the created session as active
-            // and redirect the user
-            if (signInAttempt.status === "complete") {
-                await setActive({ session: signInAttempt.createdSessionId });
+            const result = await signIn(emailAddress, password);
+            console.log(result)
+            if (result.success) {
                 router.replace("/");
             } else {
-                // If the status isn't complete, check why. User might need to
-                // complete further steps.
-                console.error(JSON.stringify(signInAttempt, null, 2));
+                setError(result.error);
             }
         } catch (err) {
-            // See https://clerk.com/docs/custom-flows/error-handling
-            // for more info on error handling
-            if (err.errors?.[0]?.code === "form_password_incorrect") {
-                setError("Password is Incorrect, please try again.");
-            } else {
-                setError("Something went wrong, please try again.");
-            }
+            setError("Something went wrong, please try again.");
+            console.error("Error signing in:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -87,6 +79,7 @@ export default function Page() {
                     onChangeText={(emailAddress) =>
                         setEmailAddress(emailAddress)
                     }
+                    editable={!loading}
                 />
                 <TextInput
                     style={[styles.input, error && styles.errorInput]}
@@ -95,9 +88,16 @@ export default function Page() {
                     secureTextEntry={true}
                     placeholderTextColor="#9A8478"
                     onChangeText={(password) => setPassword(password)}
+                    editable={!loading}
                 />
-                <TouchableOpacity style={styles.button} onPress={onSignInPress}>
-                    <Text style={styles.buttonText}>Sign In</Text>
+                <TouchableOpacity 
+                    style={[styles.button, loading && { opacity: 0.6 }]} 
+                    onPress={onSignInPress}
+                    disabled={loading}
+                >
+                    <Text style={styles.buttonText}>
+                        {loading ? "Signing In..." : "Sign In"}
+                    </Text>
                 </TouchableOpacity>
                 <View style={styles.footerContainer}>
                     <Text style={styles.footerText}>

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { View, Text, Alert, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth } from "@/context/AuthContext";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CATEGORIES = [
     { id: "food", name: "Food & Drinks", icon: "fast-food" },
@@ -19,7 +20,7 @@ const CATEGORIES = [
 
 const CreateScreen = () => {
     const router = useRouter();
-    const { user } = useUser();
+    const { user } = useAuth();
 
     const [title, setTitle] = useState("");
     const [amount, setAmount] = useState("");
@@ -45,10 +46,18 @@ const CreateScreen = () => {
                 ? -Math.abs(parseFloat(amount))
                 : Math.abs(parseFloat(amount));
 
+            // Get the auth token
+            const token = await AsyncStorage.getItem('authToken');
+            if (!token) {
+                Alert.alert("Error", "Authentication token not found. Please sign in again.");
+                return;
+            }
+
             const response = await fetch(`${API_URL}/transactions`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     user_id: user.id,

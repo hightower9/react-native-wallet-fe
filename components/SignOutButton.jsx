@@ -1,17 +1,32 @@
-import { useClerk } from "@clerk/clerk-expo";
+import { useAuth } from "@/context/AuthContext";
 import { Alert, TouchableOpacity } from "react-native";
 import { styles } from "../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../constants/colors";
 
 export const SignOutButton = () => {
-    // Use `useClerk()` to access the `signOut()` function
-    const { signOut } = useClerk();
-    const handleSignOut = async () => {
-        Alert.alert("Logout", "Are you sure you want to logout?", [
-            { text: "Cancel", style: "cancel" },
-            { text: "Logout", style: "destructive", onPress: signOut },
-        ]);
+    const { signOut } = useAuth();
+
+    const handleSignOut = () => {
+        Alert.alert(
+            "Logout",
+            "Are you sure you want to logout?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Logout",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await signOut();
+                        } catch (error) {
+                            console.error("Error signing out:", error);
+                            Alert.alert("Error", "Failed to sign out");
+                        }
+                    },
+                },
+            ]
+        );
     };
     return (
         <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>

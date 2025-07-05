@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import {
     Alert,
@@ -20,7 +20,7 @@ import { TransactionItem } from "@/components/TransactionItem";
 import { NoTransactionFound } from "@/components/NoTransactionFound";
 
 export default function Page() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
     const { transactions, summary, isLoading, loadData, deleteTransaction } =
@@ -68,11 +68,7 @@ export default function Page() {
                         <View style={styles.welcomeContainer}>
                             <Text style={styles.welcomeText}>Welcome, </Text>
                             <Text style={styles.usernameText}>
-                                {
-                                    user?.emailAddresses[0]?.emailAddress.split(
-                                        "@"
-                                    )[0]
-                                }
+                                {user?.name}
                             </Text>
                         </View>
                     </View>
